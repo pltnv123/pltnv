@@ -51,7 +51,7 @@ class Ship:
                 cur_x += i
 
             elif self.o == 1:   # 1 -- Y
-                cur_y += 1
+                cur_y += i
 
             ship_dots.append(Dot(cur_x, cur_y))
         return ship_dots
