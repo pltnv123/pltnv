@@ -19,9 +19,7 @@ from django.conf.urls import include
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
     path('pages/', include('django.contrib.flatpages.urls')),
-    # Делаем так, чтобы все адреса из нашего приложения (simpleapp/urls.py)
-    # подключались к главному приложению с префиксом products/.
     path('news/', include('appnews.urls')),
 ]
