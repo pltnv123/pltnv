@@ -5,6 +5,8 @@ from .models import Post
 
 
 class PostForm(forms.ModelForm):
+    # условие проверки
+    # description = forms.CharField(min_length=20)
 
     class Meta:
         model = Post
@@ -26,7 +28,7 @@ class PostForm(forms.ModelForm):
 
         return cleaned_data
 
-
+    # Проверка конкретного поля
     def clean_name(self):
         title = self.cleaned_data["title"]
         if title[0].islower():

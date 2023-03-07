@@ -6,6 +6,7 @@ from .filters import PostFilter
 from .forms import PostForm
 from .models import *
 from datetime import datetime
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 
 
 class PostNewsList(ListView):
@@ -19,7 +20,6 @@ class PostNewsList(ListView):
     template_name = 'news.html'
     context_object_name = 'news'
     paginate_by = 10
-
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -61,26 +61,28 @@ class PostSearch(ListView):
         return context
 
 
-
-
-
-class PostCreate(CreateView):
+class PostCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('appnews.add_post',)
     form_class = PostForm
     model = Post
-    template_name = 'post_edit.html'
+    template_name = 'post_create.html'
 
     # def form_valid(self, form):
     #     category = form.save(commit=False)
     #     category.categoryType = 'AR'
     #     return super().form_valid(form)
 
-class PostUpdate(UpdateView):
+
+class PostUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = ('appnews.update_post',)
     form_class = PostForm
     model = Post
     template_name = 'post_edit.html'
+    success_url = reverse_lazy('post_update')
 
 
-class PostDelete(DeleteView):
+class PostDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('appnews.delete_post',)
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('start_new')
