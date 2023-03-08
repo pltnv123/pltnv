@@ -13,7 +13,7 @@ Post
    <hr>
    <h3>{{ time_now|date:'M d Y' }}</h3>
 
-   {% if perms.simpleapp.add_news %}
+   {% if perms.appnews.add_post %}
    <a href="{% url 'post_create' %}">Добавить Пост</a>
    {% endif %}
 
@@ -49,10 +49,10 @@ Post
 
                <td>
                     {# А здесь доступ для каждой ссылки теперь будем проверять отдельно #}
-                    {% if perms.simpleapp.update_news %}
+                    {% if perms.appnews.change_post %}
                     <a href="{% url 'post_update' pk=i.id %}">Изменить</a>
                     {% endif %}
-                    {% if perms.simpleapp.delete_news %}
+                    {% if perms.appnews.delete_post %}
                     <a href="{% url 'post_delete' pk=i.id %}">Удалить</a>
                     {% endif %}
                 </td>
