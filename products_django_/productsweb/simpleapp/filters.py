@@ -10,7 +10,7 @@ class ProductFilter(FilterSet):
     material = ModelChoiceFilter(
         field_name='productmaterial_material',
         queryset=Material.objects.all(),
-        label='Material',
+        label='Материалы',
         empty_label='любое'
     )
 

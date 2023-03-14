@@ -7,10 +7,14 @@ from datetime import datetime
 from django.urls import reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.shortcuts import render
-from .models import Product
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from .models import Product, Subscription, Category
 from .filters import ProductFilter
 from .forms import ProductForm
+from django.contrib.auth.decorators import login_required
+from django.db.models import Exists, OuterRef
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
 
 
 def multiply(request):
@@ -43,31 +47,28 @@ class ProductsList(ListView):
         # Сохраняем нашу фильтрацию в объекте класса,
         # чтобы потом добавить в контекст и использовать в шаблоне.
         self.filterset = ProductFilter(self.request.GET, queryset)
+
         # Возвращаем из функции отфильтрованный список товаров
+        # свойство qs преобразовывает объект класса в QuerySet
         return self.filterset.qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Добавляем в контекст объект фильтрации.
         context['filterset'] = self.filterset
         return context
 
 
 class ProductDetail(DetailView):
-    # Модель всё та же, но мы хотим получать информацию по отдельному товару
     model = Product
-    # Используем другой шаблон — product.html
     template_name = 'product.html'
-    # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'product'
 
-# Добавляем новое представление для создания товаров.
-class ProductCreate(CreateView):
-    # Указываем нашу разработанную форму
+
+class ProductCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('simpleapp.add_product',)
+    raise_exception = True
     form_class = ProductForm
-    # модель товаров
     model = Product
-    # и новый шаблон, в котором используется форма.
     template_name = 'product_edit.html'
 
     def form_valid(self, form):
@@ -75,18 +76,19 @@ class ProductCreate(CreateView):
         product.quantity = 13
         return super().form_valid(form)
 
-# Добавляем представление для изменения товара.
-class ProductUpdate(UpdateView):
+
+class ProductUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = ('simpleapp.change_product',)
     form_class = ProductForm
     model = Product
     template_name = 'product_edit.html'
 
-# Представление удаляющее товар.
-class ProductDelete(DeleteView):
+
+class ProductDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('simpleapp.delete_product',)
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')
-
 
 
 # функция создает продукт  == class ProductCreate(CreateView):
@@ -99,3 +101,40 @@ class ProductDelete(DeleteView):
 #
 #     form = ProductForm()
 #     return render(request, 'product_edit.html', {'form': form})
+
+
+@login_required
+@csrf_protect
+def subscriptions(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        category = Category.objects.get(id=category_id)
+        action = request.POST.get('action')
+
+        if action == 'subscribe':
+            Subscription.objects.create(user=request.user, category=category)
+        elif action == 'unsubscribe':
+            Subscription.objects.filter(
+                user=request.user,
+                category=category,
+            ).delete()
+    # Вывод запроса из БД
+    print(Category.objects.all().query)
+
+    """Это список всех категорий, объекты данного списка имеют атрибут user_subcribed, который возвращает True если
+     текущий пользователь подписан и False если нет."""
+
+    categories_with_subscriptions = Category.objects.annotate(
+        user_subscribed=Exists(
+            Subscription.objects.filter(
+                user=request.user,
+                category=OuterRef('pk'),
+            )
+        )
+    ).order_by('name')
+
+    return render(
+        request,
+        'subscriptions.html',
+        {'categories': categories_with_subscriptions},
+    )

@@ -41,6 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
     'simpleapp',
     'django_filters',
+    #
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #
+    'allauth.socialaccount.providers.yandex',
+    #
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -67,10 +75,18 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
 ]
+
+# Этого раздела может не быть, добавьте его в указанном виде.
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 
 WSGI_APPLICATION = 'productsweb.wsgi.application'
 
@@ -127,6 +143,48 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+##
 SITE_ID = 1
+
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+LOGIN_REDIRECT_URL = "/products"
+##
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'          # Проверяем на подтверждение почты
+
+ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
+
+##
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#проверка
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "pltnvntn"
+EMAIL_HOST_PASSWORD = "hyrevhwgyajdslff"
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
+DEFAULT_FROM_EMAIL = "pltnvntn@yandex.ru"
+
+##
+
+SERVER_EMAIL = "pltnvntn@yandex.ru"
+
+MANAGERS = (
+    ('Ivan', 'a.v.pltnv@gmail.com'),
+    ('Petr', 'pltnvntn@yandex.ru'),
+)
+
+ADMINS = (
+    ('anton', 'platanton1@gmail.com'),
+)
+##
+
+EMAIL_SUBJECT_PREFIX = "[WebProducts]"
